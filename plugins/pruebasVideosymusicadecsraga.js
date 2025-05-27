@@ -25,7 +25,7 @@ const handler = async (m, { conn, args }) => {
   }
 };
 
-handler.command = ['ytmp31'];
+handler.command = ['ytmp1'];
 handler.help = ['ytmp31 <enlace de YouTube>'];
 handler.tags = ['downloader'];
 
