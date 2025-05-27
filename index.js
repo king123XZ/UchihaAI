@@ -42,14 +42,16 @@ let { say } = cfonts
 // --- MODERN, UNIQUE BOT HEADER DESIGN ---
 const header = boxen(
   `
-  GRACIAS POR USAR AL BOT 
-
-                                                                              
+   ███    ██  ██████  ██████  ██ ██   ██  █████  ██ 
+   ████   ██ ██    ██ ██   ██ ██  ██ ██  ██   ██ ██ 
+   ██ ██  ██ ██    ██ ██████  ██   ███   ███████ ██ 
+   ██  ██ ██ ██    ██ ██   ██ ██  ██ ██  ██   ██ ██ 
+   ██   ████  ██████  ██   ██ ██ ██   ██ ██   ██ ███████
 
         🤖 U C H I H A  A I  -  W H A T S A P P  🤖
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-             by DV.YER | Creador gracias por usar
+            by DV . YER | Modern WhatsApp Bot
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   `,
   {
@@ -78,7 +80,7 @@ say('MODERN WHATSAPP BOT', {
   background: 'black'
 })
 
-say('by DV.YER', {
+say('by DV . YER', {
   font: 'console',
   align: 'center',
   colors: ['magentaBright'],
@@ -90,10 +92,10 @@ serialize()
 
 global.__filename = function filename(pathURL = import.meta.url, rmPrefix = platform !== 'win32') {
   return rmPrefix ? /file:\/\/\//.test(pathURL) ? fileURLToPath(pathURL) : pathURL : pathToFileURL(pathURL).toString();
-};
+}; 
 global.__dirname = function dirname(pathURL) {
   return path.dirname(global.__filename(pathURL, true))
-};
+}; 
 global.__require = function require(dir = import.meta.url) {
   return createRequire(dir)
 }
@@ -108,7 +110,7 @@ global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse()
 global.prefix = new RegExp('^[#/!.]')
 global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(opts['db']) : new JSONFile('./src/database/database.json'))
 
-global.DATABASE = global.db
+global.DATABASE = global.db 
 global.loadDatabase = async function loadDatabase() {
   if (global.db.READ) {
     return new Promise((resolve) => setInterval(async function() {
@@ -164,20 +166,20 @@ if (!methodCodeQR && !methodCode && !fs.existsSync(`./${sessions}/creds.json`)) 
   } while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${sessions}/creds.json`))
 }
 
-console.info = () => {}
-console.debug = () => {}
+console.info = () => {} 
+console.debug = () => {} 
 
 const connectionOptions = {
   logger: pino({ level: 'silent' }),
   printQRInTerminal: opcion == '1' ? true : methodCodeQR ? true : false,
-  mobile: MethodMobile,
+  mobile: MethodMobile, 
   browser: opcion == '1' ? [`UchihaAi`, 'Edge', '25.0.1'] : methodCodeQR ? [`UchihaAi`, 'Edge', '25.0.1'] : ['ArchLinux', 'Edge', '120.0.0.1'],
   auth: {
     creds: state.creds,
     keys: makeCacheableSignalKeyStore(state.keys, Pino({ level: "fatal" }).child({ level: "fatal" })),
   },
-  markOnlineOnConnect: true,
-  generateHighQualityLinkPreview: true,
+  markOnlineOnConnect: true, 
+  generateHighQualityLinkPreview: true, 
   getMessage: async (clave) => {
     let jid = jidNormalizedUser(clave.remoteJid)
     let msg = await store.loadMessage(jid, clave.id)
@@ -191,8 +193,44 @@ const connectionOptions = {
 
 global.conn = makeWASocket(connectionOptions);
 
-// --- MODERN, UNIQUE CONNECTION MESSAGES ---
-global.conn.ev.on('connection.update', async (update) => {
+if (!fs.existsSync(`./${sessions}/creds.json`)) {
+  if (opcion === '2' || methodCode) {
+    opcion = '2'
+    if (!conn.authState.creds.registered) {
+      let addNumber
+      if (!!phoneNumber) {
+        addNumber = phoneNumber.replace(/[^0-9]/g, '')
+      } else {
+        do {
+          phoneNumber = await question(chalk.bgBlack(chalk.bold.greenBright(`✞ Por favor, Ingrese el número de WhatsApp.\n${chalk.bold.yellowBright(`  Ejemplo: 52521×××××××`)}\n${chalk.bold.magentaBright('---> ')}`)))
+          phoneNumber = phoneNumber.replace(/\D/g,'')
+          if (!phoneNumber.startsWith('+')) {
+            phoneNumber = `+${phoneNumber}`
+          }
+        } while (!await isValidPhoneNumber(phoneNumber))
+        rl.close()
+        addNumber = phoneNumber.replace(/\D/g, '')
+        setTimeout(async () => {
+          let codeBot = await conn.requestPairingCode(addNumber)
+          codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
+          console.log(chalk.bold.white(chalk.bgMagenta(`✞ CÓDIGO DE VINCULACIÓN ✞`)), chalk.bold.white(chalk.white(codeBot)))
+        }, 3000)
+      }
+    }
+  }
+}
+
+conn.isInit = false;
+conn.well = false;
+
+if (!opts['test']) {
+  if (global.db) setInterval(async () => {
+    if (global.db.data) await global.db.write()
+    if (opts['autocleartmp'] && (global.support || {}).find) (tmp = [os.tmpdir(), 'tmp', `${jadi}`], tmp.forEach((filename) => cp.spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete'])));
+  }, 30 * 1000);
+}
+
+async function connectionUpdate(update) {
   const {connection, lastDisconnect, isNewLogin} = update;
   global.stopped = connection;
   if (isNewLogin) conn.isInit = true;
@@ -257,26 +295,53 @@ global.conn.ev.on('connection.update', async (update) => {
       console.log(chalk.bold.redBright(`\n⚠︎ RAZÓN DE DESCONEXIÓN DESCONOCIDA: ${reason || 'No encontrado'} >> ${connection || 'No encontrado'}`))
     }
   }
-})
+}
+process.on('uncaughtException', console.error)
 
-// --- MODERN, UNIQUE FOOTER FOR READY STATE ---
-process.on('ready', () => {
-  console.log(
-    boxen(
-      chalk.hex('#00eaff')(
-        `\n🟢 UchihaAi está listo para revolucionar tu WhatsApp.\n` +
-        `Tips: Usa /menu para ver comandos. Disfruta tu asistente moderno!`
-      ),
-      {
-        borderColor: 'cyan',
-        padding: 1,
-        margin: 1,
-        borderStyle: 'round',
-        backgroundColor: '#191929'
-      }
-    )
-  )
-})
+// --- ESTO ES MUY IMPORTANTE PARA QUE NO FALLE reloadHandler ---
+let isInit = true;
+let handler = await import('./handler.js')
+global.reloadHandler = async function(restatConn) {
+  try {
+    const Handler = await import(`./handler.js?update=${Date.now()}`).catch(console.error);
+    if (Object.keys(Handler || {}).length) handler = Handler
+  } catch (e) {
+    console.error(e);
+  }
+  if (restatConn) {
+    const oldChats = global.conn.chats
+    try {
+      global.conn.ws.close()
+    } catch { }
+    conn.ev.removeAllListeners()
+    global.conn = makeWASocket(connectionOptions, {chats: oldChats})
+    isInit = true
+  }
+  if (!isInit) {
+    conn.ev.off('messages.upsert', conn.handler)
+    conn.ev.off('connection.update', conn.connectionUpdate)
+    conn.ev.off('creds.update', conn.credsUpdate)
+  }
 
-// Puedes seguir con el resto de tu lógica de plugins, recarga, limpieza, etc.
-// Si quieres más ayuda para modernizar respuestas o comandos, ¡dímelo!
+  conn.handler = handler.handler.bind(global.conn)
+  conn.connectionUpdate = connectionUpdate.bind(global.conn)
+  conn.credsUpdate = saveCreds.bind(global.conn, true)
+
+  const currentDateTime = new Date()
+  const messageDateTime = new Date(conn.ev)
+  if (currentDateTime >= messageDateTime) {
+    const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0])
+  } else {
+    const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0])
+  }
+
+  conn.ev.on('messages.upsert', conn.handler)
+  conn.ev.on('connection.update', conn.connectionUpdate)
+  conn.ev.on('creds.update', conn.credsUpdate)
+  isInit = false
+  return true
+};
+
+// El resto de tu código de plugins, limpieza, utilidades, etc., puede ir aquí igual que en tu original.
+
+// Si tienes más dudas, ¡puedes preguntar!
