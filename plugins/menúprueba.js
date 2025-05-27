@@ -8,7 +8,7 @@ let handler = async (m, { conn, usedPrefix }) => {
   const totalUsers = Object.keys(global.db.data.users).length
   const uptime = clockString(process.uptime() * 1000)
   const botName = 'UchihaAi'
-  const menuImage = 'https://f.uguu.se/AlWbsGhh.mp4' // Puedes personalizar este link
+  const menuVideo = videoUrl // usamos el mismo video para el menú animado
 
   // Enviar primero la nota de voz del video
   await conn.sendMessage(m.chat, {
@@ -24,7 +24,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     gifPlayback: true
   }, { quoted: m })
 
-  // Finalmente mostrar el menú sin botones
+  // Finalmente mostrar el menú con video animado (gifPlayback: true)
   const texto = `
 ╭─────「 *${botName}* 」─────
 │ 𖧷 *Usuario:* ${name}
@@ -44,8 +44,9 @@ let handler = async (m, { conn, usedPrefix }) => {
 `.trim()
 
   await conn.sendMessage(m.chat, {
-    image: { url: menuImage },
+    video: { url: menuVideo },
     caption: texto,
+    gifPlayback: true,
     footer: '¡Gracias por usar el bot!',
     headerType: 4
   }, { quoted: m })
