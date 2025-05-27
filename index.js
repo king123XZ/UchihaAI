@@ -42,13 +42,7 @@ let { say } = cfonts
 // --- MODERN, UNIQUE BOT HEADER DESIGN ---
 const header = boxen(
   `
-  
- 
-  ___   __   __         __   __  ___   ___ 
- |   \  \ \ / /         \ \ / / | __| | _ \
- | |) |  \ V /     _     \ V /  | _|  |   /
- |___/    \_/     (_)     |_|   |___| |_|_\
-                                           
+  GRACIAS POR USAR AL BOT 
 
                                                                               
 
