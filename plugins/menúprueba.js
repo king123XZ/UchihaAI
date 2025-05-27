@@ -8,7 +8,7 @@ let handler = async (m, { conn, usedPrefix }) => {
   const totalUsers = Object.keys(global.db.data.users).length
   const uptime = clockString(process.uptime() * 1000)
   const botName = 'UchihaAi'
-  const menuVideo = videoUrl // Usamos el mismo video para el menú animado
+  const menuVideo = videoUrl // Aquí está tu enlace
 
   // Enviar primero la nota de voz del video
   await conn.sendMessage(m.chat, {
@@ -19,7 +19,7 @@ let handler = async (m, { conn, usedPrefix }) => {
 
   // Luego enviar el video como gif con audio
   await conn.sendMessage(m.chat, {
-    video: { url: https://f.uguu.se/AlWbsGhh.mp4 },
+    video: { url: videoUrl },
     caption: '🎥 Aquí tienes el video especial con audio',
     gifPlayback: true
   }, { quoted: m })
