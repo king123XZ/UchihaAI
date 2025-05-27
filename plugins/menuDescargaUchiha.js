@@ -9,6 +9,16 @@ let handler = async (m, { conn, usedPrefix }) => {
   const uptime = clockString(process.uptime() * 1000)
   const botName = 'UchihaAi'
 
+  // Filtrar comandos con tag 'download'
+  let downloadCommands = Object.values(global.commands).filter(cmd => cmd.tags && cmd.tags.includes('download'))
+
+  // Construir lista de comandos en texto
+  let comandosTexto = downloadCommands.map(cmd => {
+    let cmds = Array.isArray(cmd.command) ? cmd.command : [cmd.command]
+    let cmdName = cmds[0]
+    return `🎯 ${usedPrefix}${cmdName}`
+  }).join('\n')
+
   const texto = `
 ╭───────────────「 *${botName} - Menú de Descargas* 」───────────────╮
 │👤 *Usuario:* ${name}
@@ -20,11 +30,7 @@ let handler = async (m, { conn, usedPrefix }) => {
 
 📥 *Comandos de Descarga:*
 
-🎵 ${usedPrefix}play <texto>       - Descargar música de YouTube
-🎬 ${usedPrefix}video <texto>      - Descargar video de YouTube
-📺 ${usedPrefix}ytmp3 <link>       - Descargar audio mp3 de YouTube
-📹 ${usedPrefix}ytmp4 <link>       - Descargar video mp4 de YouTube
-🖼️ ${usedPrefix}imagen <texto>      - Buscar imagen en la web
+${comandosTexto}
 
 ──────────────────────────────────────────────────────────────
 ✨ *Disfruta de tus descargas con UchihaAi.* ✨
