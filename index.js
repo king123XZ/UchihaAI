@@ -37,9 +37,30 @@ const {CONNECTING} = ws
 const {chain} = lodash
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
 
+// ------- FUNCION PARA VALIDAR NUMERO DE WHATSAPP ---------
+async function isValidPhoneNumber(number) {
+  try {
+    number = number.replace(/\s+/g, '')
+    if (number.startsWith('+521')) {
+      number = number.replace('+521', '+52');
+    } else if (number.startsWith('+52') && number[4] === '1') {
+      number = number.replace('+52 1', '+52');
+    }
+    const parsedNumber = phoneUtil.parseAndKeepRawInput(number)
+    return phoneUtil.isValidNumber(parsedNumber)
+  } catch (error) {
+    return false
+  }
+}
+
+// -------- ASEGURAR CARPETAS NECESARIAS -----------
+for (const dir of [global.sessions, global.jadi, 'tmp']) {
+  if (!existsSync('./' + dir)) mkdirSync('./' + dir, {recursive: true})
+}
+
 let { say } = cfonts
 
-// --- MODERN, UNIQUE BOT HEADER DESIGN ---
+// --------- HEADER MODERNO ---------
 const header = boxen(
   `
    ███    ██  ██████  ██████  ██ ██   ██  █████  ██ 
@@ -156,14 +177,14 @@ let opcion
 if (methodCodeQR) {
   opcion = '1'
 }
-if (!methodCodeQR && !methodCode && !fs.existsSync(`./${sessions}/creds.json`)) {
+if (!methodCodeQR && !methodCode && !fs.existsSync(`./${global.sessions}/creds.json`)) {
   do {
     opcion = await question(colores('⌨ Seleccione una opción:\n') + opcionQR('1. Con código QR\n') + opcionTexto('2. Con código de texto de 8 dígitos\n--> '))
 
     if (!/^[1-2]$/.test(opcion)) {
       console.log(chalk.bold.redBright(`✖ Opción inválida. Solo elige 1 o 2.`))
     }
-  } while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${sessions}/creds.json`))
+  } while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${global.sessions}/creds.json`))
 }
 
 console.info = () => {} 
@@ -173,7 +194,7 @@ const connectionOptions = {
   logger: pino({ level: 'silent' }),
   printQRInTerminal: opcion == '1' ? true : methodCodeQR ? true : false,
   mobile: MethodMobile, 
-  browser: opcion == '1' ? [`UchihaAi`, 'Edge', '25.0.1'] : methodCodeQR ? [`UchihaAi`, 'Edge', '25.0.1'] : ['ArchLinux', 'Edge', '120.0.0.1'],
+  browser: opcion == '1' ? [`${global.nameqr}`, 'Edge', '25.0.1'] : methodCodeQR ? [`${global.nameqr}`, 'Edge', '25.0.1'] : ['ArchLinux', 'Edge', '120.0.0.1'],
   auth: {
     creds: state.creds,
     keys: makeCacheableSignalKeyStore(state.keys, Pino({ level: "fatal" }).child({ level: "fatal" })),
@@ -193,7 +214,7 @@ const connectionOptions = {
 
 global.conn = makeWASocket(connectionOptions);
 
-if (!fs.existsSync(`./${sessions}/creds.json`)) {
+if (!fs.existsSync(`./${global.sessions}/creds.json`)) {
   if (opcion === '2' || methodCode) {
     opcion = '2'
     if (!conn.authState.creds.registered) {
@@ -226,7 +247,7 @@ conn.well = false;
 if (!opts['test']) {
   if (global.db) setInterval(async () => {
     if (global.db.data) await global.db.write()
-    if (opts['autocleartmp'] && (global.support || {}).find) (tmp = [os.tmpdir(), 'tmp', `${jadi}`], tmp.forEach((filename) => cp.spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete'])));
+    if (opts['autocleartmp'] && (global.support || {}).find) (tmp = [os.tmpdir(), 'tmp', `${global.jadi}`], tmp.forEach((filename) => cp.spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete'])));
   }, 30 * 1000);
 }
 
@@ -298,7 +319,7 @@ async function connectionUpdate(update) {
 }
 process.on('uncaughtException', console.error)
 
-// --- ESTO ES MUY IMPORTANTE PARA QUE NO FALLE reloadHandler ---
+// --- reloadHandler CORRECTAMENTE DEFINIDO ---
 let isInit = true;
 let handler = await import('./handler.js')
 global.reloadHandler = async function(restatConn) {
@@ -327,14 +348,6 @@ global.reloadHandler = async function(restatConn) {
   conn.connectionUpdate = connectionUpdate.bind(global.conn)
   conn.credsUpdate = saveCreds.bind(global.conn, true)
 
-  const currentDateTime = new Date()
-  const messageDateTime = new Date(conn.ev)
-  if (currentDateTime >= messageDateTime) {
-    const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0])
-  } else {
-    const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0])
-  }
-
   conn.ev.on('messages.upsert', conn.handler)
   conn.ev.on('connection.update', conn.connectionUpdate)
   conn.ev.on('creds.update', conn.credsUpdate)
@@ -342,6 +355,4 @@ global.reloadHandler = async function(restatConn) {
   return true
 };
 
-// El resto de tu código de plugins, limpieza, utilidades, etc., puede ir aquí igual que en tu original.
-
-// Si tienes más dudas, ¡puedes preguntar!
+// ...El resto de tu código (plugins, limpieza, utilidades, etc.) puede ir aquí igual que en tu original...
