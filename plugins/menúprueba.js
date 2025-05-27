@@ -38,13 +38,17 @@ let handler = async (m, { conn, usedPrefix }) => {
 ✨ *Bot de WhatsApp moderno, rápido y confiable.* ✨
   `.trim()
 
-  // Enviar video con menú
+  // Enviar video con menú y botón simple
   await conn.sendMessage(m.chat, {
     video: { url: menuVideo },
     caption: texto,
     gifPlayback: true,
     footer: '¡Gracias por usar UchihaAi!',
-    headerType: 4
+    headerType: 4,
+    buttons: [
+      { buttonId: `${usedPrefix}menu`, buttonText: { displayText: '📜 Ver menú' }, type: 1 }
+    ],
+    contextInfo: { mentionedJid: [m.sender] }
   }, { quoted: m })
 }
 
