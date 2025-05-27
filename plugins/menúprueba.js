@@ -24,7 +24,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     gifPlayback: true
   }, { quoted: m })
 
-  // Finalmente mostrar el menú con botones
+  // Finalmente mostrar el menú sin botones
   const texto = `
 ╭─────「 *${botName}* 」─────
 │ 𖧷 *Usuario:* ${name}
@@ -46,12 +46,7 @@ let handler = async (m, { conn, usedPrefix }) => {
   await conn.sendMessage(m.chat, {
     image: { url: menuImage },
     caption: texto,
-    footer: 'Selecciona una opción:',
-    buttons: [
-      { buttonId: `${usedPrefix}menu`, buttonText: { displayText: '📋 Menú' }, type: 1 },
-      { buttonId: `${usedPrefix}owner`, buttonText: { displayText: '👑 Creador' }, type: 1 },
-      { buttonId: `${usedPrefix}grupos`, buttonText: { displayText: '🌐 Grupos' }, type: 1 },
-    ],
+    footer: '¡Gracias por usar el bot!',
     headerType: 4
   }, { quoted: m })
 }
