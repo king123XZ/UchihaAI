@@ -8,8 +8,8 @@ let handler = async (m, { conn, usedPrefix }) => {
   const totalUsers = Object.keys(global.db.data.users).length
   const uptime = clockString(process.uptime() * 1000)
   const botName = 'UchihaAi'
-  const menuVideo = videoUrl // URL del video
-  const audioUrl = videoUrl  // Usamos el mismo enlace para audio
+  const menuVideo = videoUrl
+  const audioUrl = videoUrl
 
   // Enviar nota de voz con audio
   await conn.sendMessage(m.chat, {
@@ -18,30 +18,32 @@ let handler = async (m, { conn, usedPrefix }) => {
     ptt: true
   }, { quoted: m })
 
-  // Luego enviar el menú con video animado y texto
+  // Texto mejorado con emojis
   const texto = `
-╭─────「 *${botName}* 」─────
-│ 𖧷 *Usuario:* ${name}
-│ 𖧷 *Fecha:* ${date}
-│ 𖧷 *Hora:* ${time}
-│ 𖧷 *Usuarios:* ${totalUsers}
-│ 𖧷 *Activo:* ${uptime}
-╰──────────────────────
+╭───────────────「 *${botName}* 」───────────────╮
+│👤 *Usuario:* ${name}
+│📅 *Fecha:* ${date}
+│⏰ *Hora:* ${time}
+│👥 *Usuarios activos:* ${totalUsers}
+│⚙️ *Uptime:* ${uptime}
+╰───────────────────────────────────────────────╯
 
-┌──〔 *Menú Principal* 〕
-│ 𖧷 ${usedPrefix}menu
-│ 𖧷 ${usedPrefix}owner
-│ 𖧷 ${usedPrefix}grupos
-└───────────────
+📋 *Menú Principal:*
 
-▣ *Bot de WhatsApp moderno y rápido.*
-`.trim()
+🎯 ${usedPrefix}menu      - Mostrar este menú
+🧑‍💼 ${usedPrefix}owner     - Información del creador
+👥 ${usedPrefix}grupos    - Lista de grupos disponibles
 
+─────────────────────────────────────────────
+✨ *Bot de WhatsApp moderno, rápido y confiable.* ✨
+  `.trim()
+
+  // Enviar video con menú
   await conn.sendMessage(m.chat, {
     video: { url: menuVideo },
     caption: texto,
     gifPlayback: true,
-    footer: '¡Gracias por usar el bot!',
+    footer: '¡Gracias por usar UchihaAi!',
     headerType: 4
   }, { quoted: m })
 }
