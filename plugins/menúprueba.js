@@ -1,5 +1,5 @@
 let handler = async (m, { conn, usedPrefix }) => {
-  //const videoUrl = 'https://f.uguu.se/AlWbsGhh.mp4'
+  const videoUrl = 'https://f.uguu.se/AlWbsGhh.mp4'
   const name = await conn.getName(m.sender)
   const date = new Date().toLocaleDateString('es', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
