@@ -18,7 +18,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     ptt: true
   }, { quoted: m })
 
-  // Texto mejorado con emojis
+  // Texto del menú
   const texto = `
 ╭───────────────「 *${botName}* 」───────────────╮
 │👤 *Usuario:* ${name}
@@ -38,18 +38,19 @@ let handler = async (m, { conn, usedPrefix }) => {
 ✨ *Bot de WhatsApp moderno, rápido y confiable.* ✨
   `.trim()
 
-  // Enviar video con menú y botón simple
+  // Enviar video con menú
   await conn.sendMessage(m.chat, {
     video: { url: menuVideo },
     caption: texto,
     gifPlayback: true,
     footer: '¡Gracias por usar UchihaAi!',
-    headerType: 4,
-    buttons: [
-      { buttonId: `${usedPrefix}menu`, buttonText: { displayText: '📜 Ver menú' }, type: 1 }
-    ],
-    contextInfo: { mentionedJid: [m.sender] }
+    headerType: 4
   }, { quoted: m })
+
+  // Enviar mensaje con texto y comando para que usuario toque o copie
+  await conn.sendMessage(m.chat, {
+    text: `Para ver el menú completo, escribe o toca: *${usedPrefix}menu*`
+  })
 }
 
 handler.command = ['menu', 'menú', 'videoespecial']
