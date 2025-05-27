@@ -75,8 +75,8 @@ const handler = async (m, { conn, args }) => {
   }
 };
 
-handler.help = ['ytmp3 <url>'];
+handler.help = ['ytmp1 <url>'];
 handler.tags = ['downloader'];
-handler.command = /^yt(mp3|audio)$/i;
+handler.command = /^yt(ytmp1|audio)$/i;
 
 export default handler;
