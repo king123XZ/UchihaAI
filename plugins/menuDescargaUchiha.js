@@ -43,22 +43,13 @@ ${comandosTexto}
 ✨ *Disfruta de tus descargas con UchihaAi.* ✨
 `.trim()
 
-  // Enviar video con caption y botón
-  const buttons = [
-    { buttonId: `${usedPrefix}menu`, buttonText: { displayText: '🔙 Menú Principal' }, type: 1 }
-  ]
-
-  const buttonMessage = {
+  await conn.sendMessage(m.chat, {
     video: { url: videoUrl },
     caption: texto,
     gifPlayback: true,
     footer: '¡Gracias por usar UchihaAi!',
-    headerType: 4,
-    buttons,
-    mentions: [m.sender]
-  }
-
-  await conn.sendMessage(m.chat, buttonMessage, { quoted: m })
+    headerType: 4
+  }, { quoted: m })
 }
 
 handler.command = ['descargas', 'download', 'descarga']
