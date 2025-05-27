@@ -8,7 +8,7 @@ let handler = async (m, { conn, usedPrefix }) => {
   const totalUsers = Object.keys(global.db.data.users).length
   const uptime = clockString(process.uptime() * 1000)
   const botName = 'UchihaAi'
-  const menuImage = 'https://qu.ax/sBBQh.jpg' // Puedes personalizar este link
+  const menuImage = 'https://f.uguu.se/AlWbsGhh.mp4' // Puedes personalizar este link
 
   // Enviar primero la nota de voz del video
   await conn.sendMessage(m.chat, {
