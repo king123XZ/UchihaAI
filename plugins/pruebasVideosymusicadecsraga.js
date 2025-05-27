@@ -1,43 +1,32 @@
-import axios from 'axios'
+import axios from 'axios';
 
-const handler = async (m, { conn, args, usedPrefix, command }) => {
-  const url = args[0]
+const handler = async (m, { conn, args }) => {
+  const url = args[0];
   if (!url || !url.includes('youtube.com') && !url.includes('youtu.be')) {
-    return m.reply(`✴️ *Uso:* ${usedPrefix + command} <enlace de YouTube>`)
+    return m.reply('❌ Por favor, proporciona un enlace válido de YouTube.');
   }
 
   try {
-    m.react('⏳')
-    const { data } = await axios.post('https://snapsave.app/action.php?lang=es', new URLSearchParams({
-      url: url,
-      token: ''
-    }), {
-      headers: {
-        'content-type': 'application/x-www-form-urlencoded',
-        'user-agent': 'Mozilla/5.0'
-      }
-    })
+    m.react('⏳');
+    const response = await axios.get(`https://youtube-download-api.matheusishiyama.repl.co/mp3/?url=${encodeURIComponent(url)}`, {
+      responseType: 'arraybuffer'
+    });
 
-    const snapHTML = data
-    const match = snapHTML.match(/href="(https:\/\/.*?\.mp4.*?)"/)
-    if (!match) throw '❌ No se pudo extraer el enlace de descarga.'
-
-    const downloadUrl = match[1]
-
+    const title = 'audio.mp3'; // Puedes obtener el título real si la API lo proporciona
     await conn.sendMessage(m.chat, {
-      video: { url: downloadUrl },
-      mimetype: 'video/mp4',
-      caption: `✅ *Aquí tienes tu video descargado con SnapSave*`
-    }, { quoted: m })
+      audio: response.data,
+      mimetype: 'audio/mpeg',
+      fileName: title
+    }, { quoted: m });
 
-  } catch (e) {
-    console.error(e)
-    m.reply('⚠️ Ocurrió un error al intentar descargar el video.')
+  } catch (error) {
+    console.error(error);
+    m.reply('⚠️ Ocurrió un error al intentar descargar el audio.');
   }
-}
+};
 
-handler.command = ['ytmp4snapsave']
-handler.help = ['ytmp4snapsave <url>']
-handler.tags = ['downloader']
+handler.command = ['ytmp31'];
+handler.help = ['ytmp31 <enlace de YouTube>'];
+handler.tags = ['downloader'];
 
-export default handler
+export default handler;
