@@ -9,14 +9,21 @@ let handler = async (m, { conn, usedPrefix }) => {
   const uptime = clockString(process.uptime() * 1000)
   const botName = 'UchihaAi'
 
+  if (!global.commands) {
+    return await m.reply('No hay comandos registrados en el bot.')
+  }
+
   // Filtrar comandos con tag 'download'
-  let downloadCommands = Object.values(global.commands).filter(cmd => cmd.tags && cmd.tags.includes('download'))
+  const downloadCommands = Object.values(global.commands).filter(cmd => cmd.tags && cmd.tags.includes('download'))
+
+  if (downloadCommands.length === 0) {
+    return await m.reply('No hay comandos de descarga disponibles.')
+  }
 
   // Construir lista de comandos en texto
-  let comandosTexto = downloadCommands.map(cmd => {
+  const comandosTexto = downloadCommands.map(cmd => {
     let cmds = Array.isArray(cmd.command) ? cmd.command : [cmd.command]
-    let cmdName = cmds[0]
-    return `🎯 ${usedPrefix}${cmdName}`
+    return `🎯 ${usedPrefix}${cmds[0]}`
   }).join('\n')
 
   const texto = `
@@ -34,19 +41,24 @@ ${comandosTexto}
 
 ──────────────────────────────────────────────────────────────
 ✨ *Disfruta de tus descargas con UchihaAi.* ✨
-  `.trim()
+`.trim()
 
-  await conn.sendMessage(m.chat, {
+  // Enviar video con caption y botón
+  const buttons = [
+    { buttonId: `${usedPrefix}menu`, buttonText: { displayText: '🔙 Menú Principal' }, type: 1 }
+  ]
+
+  const buttonMessage = {
     video: { url: videoUrl },
     caption: texto,
     gifPlayback: true,
     footer: '¡Gracias por usar UchihaAi!',
-    headerType: 4
-  }, { quoted: m })
+    headerType: 4,
+    buttons,
+    mentions: [m.sender]
+  }
 
-  await conn.sendMessage(m.chat, {
-    text: `Para volver al menú principal, escribe o toca: *${usedPrefix}menu*`
-  })
+  await conn.sendMessage(m.chat, buttonMessage, { quoted: m })
 }
 
 handler.command = ['descargas', 'download', 'descarga']
