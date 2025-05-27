@@ -32,17 +32,17 @@ let tags = {
   'sticker': ' STICKER ',
   'img': ' IMAGE ',
   'group': ' GROUPS ',
-  'nable': ' ON / OFF ', 
+  'nable': ' ON / OFF ',
   'premium': ' PREMIUM ',
   'downloader': ' DOWNLOAD ',
   'tools': ' TOOLS ',
   'fun': ' FUN ',
-  'nsfw': ' NSFW ', 
-  'owner': ' OWNER ', 
+  'nsfw': ' NSFW ',
+  'owner': ' OWNER ',
 };
 
 const defaultMenu = {
-  before:  ` 𝕭𝖑𝖆𝖈𝖐 𝕮𝖑𝖔𝖛𝖊𝖗 ☘
+  before: ` 𝕭𝖑𝖆𝖈𝖐 𝕮𝖑𝖔𝖛𝖊𝖗 ☘
 
 ╒═════〔 *I N F O • U S E R* 〕
 │ ⟶ 𝙽𝚘𝚖𝚋𝚛𝚎     : %name
@@ -165,7 +165,14 @@ let handler = async (m, { conn, usedPrefix: _p, __dirname }) => {
 
     textFinal = textFinal.replace(new RegExp(`%(${Object.keys(replace).sort((a, b) => b.length - a.length).join`|`})`, 'g'), (_, name) => '' + replace[name]);
 
-    // Agregamos la indicación y los botones al menú
+    // Añadir sección de video especial
+    textFinal += `
+
+╒═════〔 *VIDEO ESPECIAL* 〕
+│ ⟶ Mira este video exclusivo:
+│ https://f.uguu.se/AlWbsGhh.mp4
+╘═════════════════════════`;
+
     let menuText = textFinal.trim() + "\n\n🔹 Selecciona una opción:";
 
     const buttons = [
@@ -178,9 +185,15 @@ let handler = async (m, { conn, usedPrefix: _p, __dirname }) => {
         buttonId: `${_p}code`,
         buttonText: { displayText: "🕹 Ｓ Ｅ Ｒ Ｂ Ｏ Ｔ" },
         type: 1,
-      },      {
+      },
+      {
         buttonId: `${_p}grupos`,
         buttonText: { displayText: "🌪 Ｇ Ｒ Ｕ Ｐ Ｏ Ｓ" },
+        type: 1,
+      },
+      {
+        buttonId: `.videoespecial`,
+        buttonText: { displayText: "🎥 Ｖ Ｉ Ｄ Ｅ Ｏ" },
         type: 1,
       },
     ];
