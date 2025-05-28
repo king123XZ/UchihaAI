@@ -1,41 +1,45 @@
-import uploadFile from '../lib/uploadFile.js'
-import uploadImage from '../lib/uploadImage.js'
-import fetch from 'node-fetch'
+const axios = require("axios");
+const FormData = require("form-data");
+const fs = require("fs");
+const path = require("path");
 
-let handler = async (m) => {
-  let q = m.quoted ? m.quoted : m
-  let mime = (q.msg || q).mimetype || ''
-  if (!mime) return conn.reply(m.chat, '🍃 Responde a una *Imagen* o *Vídeo.*', m)
-  try {
-  let media = await q.download()
-  let isTele = /image\/(png|jpe?g|gif)|video\/mp4/.test(mime)
-  let link = await (isTele ? uploadImage : uploadFile)(media)
-  let img = await (await fetch(`${link}`)).buffer()
-  let txt = `乂  *L I N K - C A T B O X*  乂\n\n`
-      txt += `*» Enlace* : ${link}\n`
-      txt += `*» Tamaño* : ${formatBytes(media.length)}\n`
-      txt += `*» Expiración* : ${isTele ? 'No expira' : 'Desconocido'}\n\n`
-      txt += `> *${dev}*`
+async function handler(m, { conn, usedPrefix, command }) {
+  const quoted = m.quoted || m;
+  const mime = (quoted.msg || quoted).mimetype || "";
 
-await conn.reply(m.chat, txt, m, rcanal)
-} catch (e) {
-await conn.reply(m.chat, '⚠︎ *Error:* ' + e, m)
-}}
-handler.help = ['tourl2']
-handler.tags = ['tools']
-handler.command = ['tourl2', 'catbox']
-export default handler
-
-function formatBytes(bytes) {
-  if (bytes === 0) {
-    return '0 B';
+  if (!/image|video|audio|application/.test(mime)) {
+    return conn.sendMessage(m.chat, { text: `✳️ Responde a un archivo (imagen, video, audio, documento) con el comando *${usedPrefix + command}*` }, { quoted: m });
   }
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(1024))
-  return `${(bytes / 1024 ** i).toFixed(2)} ${sizes[i]}`;
+
+  const mediaPath = await conn.downloadAndSaveMediaMessage(quoted);
+  const form = new FormData();
+  form.append("files[]", fs.createReadStream(mediaPath));
+
+  try {
+    const res = await axios.post("https://qu.ax/upload.php", form, {
+      headers: form.getHeaders(),
+    });
+
+    if (res.data.success && res.data.files.length > 0) {
+      const url = res.data.files[0].url;
+      await conn.sendMessage(m.chat, {
+        text: `✅ Archivo subido correctamente:\n\n📎 ${url}`,
+      }, { quoted: m });
+    } else {
+      throw new Error("No se pudo obtener el enlace del archivo.");
+    }
+  } catch (err) {
+    console.error("Error al subir a qu.ax:", err);
+    await conn.sendMessage(m.chat, {
+      text: `❌ Error al subir el archivo.`,
+    }, { quoted: m });
+  } finally {
+    fs.unlinkSync(mediaPath);
+  }
 }
 
-async function shortUrl(url) {
-        let res = await fetch(`https://tinyurl.com/api-create.php?url=${url}`)
-        return await res.text()
-}
+handler.command = /^tourl$/i;
+handler.help = ['tourl'];
+handler.tags = ['tools'];
+
+module.exports = handler;
