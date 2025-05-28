@@ -42,7 +42,7 @@ async function handler(m, { conn, usedPrefix, command }) {
   }
 }
 
-handler.command = /^tourl1$/i;
+handler.command = /^tourl$/i;
 handler.help = ['tourl'];
 handler.tags = ['tools'];
 
