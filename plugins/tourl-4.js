@@ -1,3 +1,7 @@
+//creador del codigo dv.yer uso libre no borras esto dar las gracias 
+// codigo de UchihaAI
+
+
 const axios = require("axios");
 const FormData = require("form-data");
 const fs = require("fs");
