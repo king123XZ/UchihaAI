@@ -1,53 +1,39 @@
-import yts from 'yt-search';
+import yts from 'yt-search' // npm install yt-search
 
-const handler = async (m, { conn, text, usedPrefix, command }) => {
-  if (!text) {
-    throw `❗ Por favor ingresa un texto para buscar.\nEjemplo: ${usedPrefix + command} Nombre del video`;
+export async function handler(m, { command, usedPrefix, text }) {
+  if (command === 'play') {
+    if (!text) return m.reply('❌ Por favor, ingresa el nombre o link de la canción que quieres buscar.')
+
+    try {
+      const ytResult = await searchYouTube(text)
+      if (!ytResult) return m.reply('❌ No encontré resultados para tu búsqueda.')
+
+      const message = `🎵 Resultado de búsqueda:
+Título: ${ytResult.title}
+Duración: ${ytResult.duration}
+Canal: ${ytResult.author}
+Link: ${ytResult.url}`
+
+      m.reply(message)
+    } catch (error) {
+      console.error(error)
+      m.reply('❌ Ocurrió un error al buscar la canción.')
+    }
   }
 
-  
-  const search = await yts(text);
-  const videoInfo = search.all?.[0];
+  // Aquí puedes agregar más comandos si quieres
+}
 
-  if (!videoInfo) {
-    throw '❗ No se encontraron resultados para tu búsqueda. Intenta con otro título.';
+async function searchYouTube(query) {
+  const results = await yts(query)
+  if (results && results.videos && results.videos.length > 0) {
+    const video = results.videos[0]
+    return {
+      title: video.title,
+      url: video.url,
+      duration: video.timestamp,
+      author: video.author.name
+    }
   }
-
-  const body = `
-🎥 *YσuTυbє Plαy*  
-━━━━━━━━━━━━━━━━━━━━  
-📌 *🎬 Tιтlє:* ${videoInfo.title}  
-👀 *💯 Vιѕtαѕ:* ${videoInfo.views.toLocaleString()}  
-⏱️ *⏳ Dυrαcισn:* ${videoInfo.timestamp}  
-📅 *🕒 Pυblιcαdσ:* ${videoInfo.ago}  
-🔗 *🌐 URL:* ${videoInfo.url}  
-  
-Elige una de las opciones para descargar:
-🎵 *Audio* o 📽️ *Video*
-  `;
-
-  await conn.sendMessage(
-    m.chat,
-    {
-      image: { url: videoInfo.thumbnail },
-      caption: body,
-      footer: `© Bot | 🐉SonGoku🐉`,
-      buttons: [
-        { buttonId: `.ytmp3 ${videoInfo.url}`, buttonText: { displayText: '🎵 Audio' } },
-        { buttonId: `.ytmp6 ${videoInfo.url}`, buttonText: { displayText: '📽️ Video' } },
-        { buttonId: `.ytmp4doc ${videoInfo.url}`, buttonText: { displayText: '📼 Video Doc' } },
-      ],
-      viewOnce: true,
-      headerType: 4,
-    },
-    { quoted: m }
-  );
-  m.react('✅'); // Reacción de éxito
-};
-
-handler.command = ['play', 'playvid', 'play2'];
-handler.tags = ['downloader']
-//handler.group = true
-//handler.limit = 6
-
-export default handler;
+  return null
+}
