@@ -1,25 +1,44 @@
 import axios from 'axios'
+import cheerio from 'cheerio'
 
 let handler = async (m, { text, command, usedPrefix }) => {
-  if (!text) {
-    throw `❌ Usa el comando así:\n${usedPrefix + command} https://youtube.com/watch?v=ID`
+  if (!text || !/^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\//i.test(text)) {
+    throw `❌ Usa el comando correctamente:\n${usedPrefix + command} https://youtube.com/watch?v=ID`
   }
 
-  const urlYT = encodeURIComponent(text)
-  const apiUrl = `https://p.oceansaver.in/api/widget?adUrl=${urlYT}`
-
   try {
-    const response = await axios.get(apiUrl, {
-      maxRedirects: 0,
-      validateStatus: status => status >= 200 && status < 400
+    const apiUrl = `https://p.oceansaver.in/api/widget?adUrl=${encodeURIComponent(text)}`
+    const { data } = await axios.get(apiUrl)
+    
+    // Extraemos los enlaces del HTML usando cheerio
+    const $ = cheerio.load(data)
+    let downloadLinks = []
+
+    $('a').each((_, el) => {
+      const href = $(el).attr('href')
+      if (href && href.includes('download')) {
+        downloadLinks.push(href)
+      }
     })
 
-    let finalUrl = response.headers.location || apiUrl
+    if (!downloadLinks.length) {
+      return m.reply('⚠️ No se pudo obtener ningún enlace de descarga.')
+    }
 
-    await m.reply(`✅ Enlace de descarga:\n${finalUrl}`)
-  } catch (err) {
-    console.error(err)
-    await m.reply('❌ Error al procesar el enlace. Asegúrate de que sea un link válido de YouTube.')
+    // Filtrar según el comando (mp3 o mp4)
+    const filteredLinks = downloadLinks.filter(link =>
+      command === 'ytmp3' ? link.includes('.mp3') : link.includes('.mp4')
+    )
+
+    if (!filteredLinks.length) {
+      return m.reply(`⚠️ No se encontraron archivos ${command === 'ytmp3' ? 'de audio' : 'de video'} disponibles.`)
+    }
+
+    const result = filteredLinks[0]
+    await m.reply(`✅ Enlace de descarga (${command.toUpperCase()}):\n${result}`)
+  } catch (e) {
+    console.error(e)
+    m.reply('❌ Hubo un error al procesar el enlace.')
   }
 }
 
