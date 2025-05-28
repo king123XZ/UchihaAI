@@ -1,28 +1,30 @@
-async function handler(m, { command, usedPrefix }) {
-  const comandos = [
-    { cmd: 'ytmp3', desc: 'Descargar audio de YouTube' },
-    { cmd: 'ytmp4', desc: 'Descargar video de YouTube' },
-    { cmd: 'play', desc: 'Buscar y descargar música' },
-    { cmd: 'playvideo', desc: 'Buscar y descargar video' },
-    { cmd: 'facebook', desc: 'Descargar video de Facebook' },
-    { cmd: 'instagram', desc: 'Descargar reels de Instagram' },
-    { cmd: 'tiktok', desc: 'Descargar video de TikTok (sin marca de agua)' },
-    { cmd: 'mediafire', desc: 'Descargar archivos de Mediafire' },
-    { cmd: 'soundcloud', desc: 'Descargar música de SoundCloud' },
-    { cmd: 'twitter', desc: 'Descargar video de Twitter/X' },
-    { cmd: 'pinterestdl', desc: 'Descargar imágenes de Pinterest' },
-    { cmd: 'tourl', desc: 'Subir archivos a qu.ax y obtener enlace' },
-  ];
+import fetch from 'node-fetch'
 
-  let text = '📥 *COMANDOS DE DESCARGA DISPONIBLES:*\n\n';
-  text += comandos.map(c => `• *${usedPrefix + c.cmd}* → ${c.desc}`).join('\n');
-  text += `\n\n🧠 Usa cualquiera de estos comandos respondiendo con un link o texto apropiado.`;
+const menuDescargas = `
+╔═════════════════════╗
+║     📥 DESCARGAS 📥
+╚═════════════════════╝
+1. !ytmp3 [enlace]    - Descargar audio de YouTube
+2. !ytmp4 [enlace]    - Descargar video de YouTube
+3. !tiktok [enlace]   - Descargar video de TikTok
+4. !instagram [enlace]- Descargar video de Instagram
+5. !facebook [enlace] - Descargar video de Facebook
+6. !mediafire [enlace]- Descargar archivo Mediafire
+═══════════════════════
+Ejemplo: !ytmp3 https://youtu.be/dQw4w9WgXcQ
+═══════════════════════
+`
 
-  await m.reply(text);
+export async function handler(m, { command, conn }) {
+  if (command === 'menu2' || command === 'menudescargas' || command === 'descargas') {
+    await conn.reply(m.chat, menuDescargas, m)
+  }
 }
 
-handler.command = /^(descargas|download)$/i;
-handler.help = ['descargas'];
-handler.tags = ['download'];
-
-module.exports = handler;
+// Si tu sistema de plugins requiere exportar un objeto:
+export default {
+  help: ['menudescargas', 'menu2', 'descargas'],
+  tags: ['menu'],
+  command: /^(menu2|menudescargas|descargas)$/i,
+  handler
+}
