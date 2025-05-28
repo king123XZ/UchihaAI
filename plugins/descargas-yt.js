@@ -1,109 +1,74 @@
-import fetch from "node-fetch"; import yts from 'yt-search'; import axios from "axios";
+import fetch from 'node-fetch'
 
-const formatAudio = ['mp3', 'm4a', 'webm', 'acc', 'flac', 'opus', 'ogg', 'wav']; const formatVideo = ['360', '480', '720', '1080', '1440', '4k'];
+const API_KEY = 'dfcb6d76f2f6a9894gjkege8a4ab232222'
+const API_URL = 'https://p.oceansaver.in/ajax/download.php'
 
-const ddownr = { download: async (url, format) => { if (!formatAudio.includes(format) && !formatVideo.includes(format)) { throw new Error('Formato no soportado, verifica la lista de formatos disponibles.'); }
-
-const apiUrl = `https://p.oceansaver.in/ajax/download.php?format=${format}&url=${encodeURIComponent(url)}&api=dfcb6d76f2f6a9894gjkege8a4ab232222`;
-
-try {
-  const { data } = await axios.get(apiUrl, {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/91.0.4472.124 Safari/537.36'
-    }
-  });
-
-  if (data && data.success) {
-    const downloadUrl = await ddownr.cekProgress(data.id);
-    return {
-      id: data.id,
-      image: data.info.image,
-      title: data.title,
-      downloadUrl
-    };
-  } else {
-    throw new Error('Fallo al obtener los detalles del video.');
+const handler = async (m, { conn, args, usedPrefix, command }) => {
+  if (!args[0]) {
+    await conn.reply(
+      m.chat,
+      `🌊 *Descargas de Video y Música*\n\n` +
+      `Envía el comando así:\n` +
+      `*${usedPrefix + command} <enlace> [mp3|mp4]*\n\n` +
+      `Ejemplo:\n` +
+      `> ${usedPrefix + command} https://www.youtube.com/watch?v=dQw4w9WgXcQ mp3\n` +
+      `> ${usedPrefix + command} https://www.youtube.com/watch?v=dQw4w9WgXcQ mp4`,
+      m
+    )
+    return
   }
-} catch (err) {
-  console.error('Error:', err);
-  throw err;
-}
 
-},
+  let url = args[0]
+  let format = (args[1] || 'mp4').toLowerCase()
+  if (!['mp3', 'mp4'].includes(format)) format = 'mp4'
 
-cekProgress: async (id) => { const url = https://p.oceansaver.in/ajax/progress.php?id=${id}; while (true) { try { const { data } = await axios.get(url); if (data?.success && data.progress === 1000) return data.download_url; await new Promise(r => setTimeout(r, 3000)); } catch (err) { throw err; } } } };
+  await conn.reply(
+    m.chat,
+    `⏳ Procesando tu descarga de ${format === 'mp3' ? 'música' : 'video'}...`,
+    m
+  )
 
-const handler = async (m, { conn, text, usedPrefix, command }) => { try { if (!text.trim()) return conn.reply(m.chat, '⚔️ Ingresa el nombre de la música a descargar.', m);
+  try {
+    let api = `${API_URL}?format=${format}&url=${encodeURIComponent(url)}&api=${API_KEY}`
+    let res = await fetch(api)
+    let json = await res.json()
 
-const { all: results } = await yts(text);
-if (!results || results.length === 0) return m.reply('No se encontraron resultados para tu búsqueda.');
-
-const video = results[0];
-const { title, thumbnail, timestamp, views, ago, url } = video;
-const vistas = formatViews(views);
-const info = `📹 *Título:* ${title}\n👁️ *Vistas:* ${vistas}\n⏳ *Duración:* ${timestamp}\n📆 *Publicado:* ${ago}\n🔗 *Enlace:* ${url}`;
-
-const thumb = (await conn.getFile(thumbnail))?.data;
-const preview = {
-  contextInfo: {
-    externalAdReply: {
-      title: 'Descarga de YouTube',
-      body: 'Descarga rápida',
-      mediaType: 1,
-      previewType: 0,
-      mediaUrl: url,
-      sourceUrl: url,
-      thumbnail: thumb,
-      renderLargerThumbnail: true
+    if (!json?.url) {
+      await conn.reply(m.chat, '❌ No se pudo obtener el archivo. El enlace podría ser inválido o no soportado.', m)
+      return
     }
-  }
-};
 
-await conn.reply(m.chat, info, m, preview);
-
-if (['ytmp3', 'yta'].includes(command)) {
-  const audio = await ddownr.download(url, 'mp3');
-  await conn.sendMessage(m.chat, {
-    audio: { url: audio.downloadUrl },
-    mimetype: 'audio/mpeg'
-  }, { quoted: m });
-
-} else if (['ytmp4', 'ytv'].includes(command)) {
-  const apis = [
-    `https://api.siputzx.my.id/api/d/ytmp4?url=${url}`,
-    `https://api.zenkey.my.id/api/download/ytmp4?apikey=zenkey&url=${url}`,
-    `https://axeel.my.id/api/download/video?url=${encodeURIComponent(url)}`,
-    `https://delirius-apiofc.vercel.app/download/ytmp4?url=${url}`
-  ];
-
-  for (let api of apis) {
-    try {
-      const res = await fetch(api);
-      const json = await res.json();
-      const downloadUrl = json?.data?.dl || json?.result?.download?.url || json?.downloads?.url || json?.data?.download?.url;
-      if (downloadUrl) {
-        return await conn.sendMessage(m.chat, {
-          video: { url: downloadUrl },
-          fileName: `${title}.mp4`,
+    if (format === 'mp4') {
+      await conn.sendMessage(
+        m.chat,
+        {
+          video: { url: json.url },
           mimetype: 'video/mp4',
-          caption: '🥷 Aquí tienes tu video',
-          thumbnail: thumb
-        }, { quoted: m });
-      }
-    } catch (e) {
-      console.error(`API fallback error:`, e.message);
+          caption: `✅ *Video descargado exitosamente*\n\n*Fuente:* ${url}`
+        },
+        { quoted: m }
+      )
+    } else {
+      await conn.sendMessage(
+        m.chat,
+        {
+          audio: { url: json.url },
+          mimetype: 'audio/mpeg',
+          fileName: (json.title || 'audio') + '.mp3',
+          caption: `✅ *Música descargada exitosamente*\n\n*Fuente:* ${url}`
+        },
+        { quoted: m }
+      )
     }
+  } catch (e) {
+    console.error(e)
+    await conn.reply(m.chat, '❌ Ocurrió un error al intentar descargar el archivo.', m)
   }
-  return m.reply('⚔️ No se pudo descargar el video.');
-} else {
-  return m.reply('Comando no reconocido.');
 }
 
-} catch (err) { return m.reply(⚠️ Error: ${err.message}); } };
+handler.help = ['descargar <enlace> [mp3|mp4]']
+handler.tags = ['descargas']
+handler.command = /^(descargar|dload|ytmusica|ytvideo)$/i
+handler.register = false
 
-handler.command = ['play', 'ytmp3', 'yta', 'ytmp4', 'ytv']; handler.tags = ['downloader']; handler.help = ['play', 'ytmp3', 'ytmp4'];
-
-export default handler;
-
-function formatViews(views) { return views >= 1000 ? (views / 1000).toFixed(1) + 'k (' + views.toLocaleString() + ')' : views.toString(); }
-
+export default handler
