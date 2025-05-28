@@ -1,19 +1,25 @@
 import axios from 'axios'
 
 let handler = async (m, { text, command, usedPrefix }) => {
-  if (!text) throw `❌ Usa el comando así:\n${usedPrefix + command} https://youtube.com/watch?v=ID`
+  if (!text) {
+    throw `❌ Usa el comando así:\n${usedPrefix + command} https://youtube.com/watch?v=ID`
+  }
 
-  const apiUrl = `https://p.oceansaver.in/api/widget?adUrl=${encodeURIComponent(text)}`
-  
+  const urlYT = encodeURIComponent(text)
+  const apiUrl = `https://p.oceansaver.in/api/widget?adUrl=${urlYT}`
+
   try {
-    const response = await axios.get(apiUrl)
-    const finalUrl = response.request?.res?.responseUrl || apiUrl
+    const response = await axios.get(apiUrl, {
+      maxRedirects: 0,
+      validateStatus: status => status >= 200 && status < 400
+    })
 
-    const msg = `✅ Aquí tienes tu enlace de descarga:\n${finalUrl}`
-    await m.reply(msg)
-  } catch (e) {
-    console.error(e)
-    await m.reply('❌ Ocurrió un error al procesar el enlace de YouTube.')
+    let finalUrl = response.headers.location || apiUrl
+
+    await m.reply(`✅ Enlace de descarga:\n${finalUrl}`)
+  } catch (err) {
+    console.error(err)
+    await m.reply('❌ Error al procesar el enlace. Asegúrate de que sea un link válido de YouTube.')
   }
 }
 
