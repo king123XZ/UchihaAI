@@ -40,7 +40,7 @@ Elige una de las opciones para descargar:
 
 handler.command = ['play', 'playvid', 'play2'];
 handler.tags = ['downloader']
-handler.group = true
-handler.limit = 6
+//handler.group = true
+//handler.limit = 6
 
 export default handler;
