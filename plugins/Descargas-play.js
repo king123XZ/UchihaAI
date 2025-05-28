@@ -13,10 +13,17 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     throw '❗ No se encontraron resultados para tu búsqueda. Intenta con otro título.';
   }
 
-  const body = `\`\`\`El mejor bot de WhatsApp ⚔️
+  const body = `
+🎥 *YσuTυbє Plαy*  
+━━━━━━━━━━━━━━━━━━━━  
+📌 *🎬 Tιтlє:* ${videoInfo.title}  
+👀 *💯 Vιѕtαѕ:* ${videoInfo.views.toLocaleString()}  
+⏱️ *⏳ Dυrαcισn:* ${videoInfo.timestamp}  
+📅 *🕒 Pυblιcαdσ:* ${videoInfo.ago}  
+🔗 *🌐 URL:* ${videoInfo.url}  
   
 Elige una de las opciones para descargar:
-🎧 *Audio* o 📽️ *Video*
+🎵 *Audio* o 📽️ *Video*
   `;
 
   await conn.sendMessage(
@@ -24,10 +31,10 @@ Elige una de las opciones para descargar:
     {
       image: { url: videoInfo.thumbnail },
       caption: body,
-      footer: `𝕭𝖑𝖆𝖈𝖐 𝕮𝖑𝖔𝖛𝖊𝖗 ☘︎| ⚔️🥷`,
+      footer: `© Bot | 🐉SonGoku🐉`,
       buttons: [
         { buttonId: `.ytmp3 ${videoInfo.url}`, buttonText: { displayText: '🎵 Audio' } },
-        { buttonId: `.ytmp4 ${videoInfo.url}`, buttonText: { displayText: '📽️ Video' } },
+        { buttonId: `.ytmp6 ${videoInfo.url}`, buttonText: { displayText: '📽️ Video' } },
         { buttonId: `.ytmp4doc ${videoInfo.url}`, buttonText: { displayText: '📼 Video Doc' } },
       ],
       viewOnce: true,
@@ -40,7 +47,7 @@ Elige una de las opciones para descargar:
 
 handler.command = ['play', 'playvid', 'play2'];
 handler.tags = ['downloader']
-//handler.group = true
-//handler.limit = 6
+handler.group = true
+handler.limit = 6
 
 export default handler;
