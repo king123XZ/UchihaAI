@@ -1,87 +1,43 @@
-let handler = async (m, { conn, usedPrefix }) => {
-  const videoUrl = 'https://qu.ax/bsSQY.mp4'
-  const name = await conn.getName(m.sender)
-  const date = new Date().toLocaleDateString('es', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-  })
-  const time = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
-  const totalUsers = Object.keys(global.db.data.users).length
-  const uptime = clockString(process.uptime() * 1000)
-  const botName = 'UchihaAi'
-  const menuVideo = videoUrl
-  const audioUrl = videoUrl
+let handler = async (m, { text, conn, usedPrefix, command }) => {
+let texto = `
 
-  const tags = {
-    descargas: '⬇️ Descargas',
-    group: '👥 Grupos'
-  }
+_¡Bienvenido a SonGoku! Este bot te ofrece herramientas útiles, entretenimiento y acceso a diversas funciones desde tu WhatsApp._
 
-  let help = Object.values(global.plugins)
-    .filter(plugin => !plugin.disabled)
-    .map(plugin => ({
-      help: Array.isArray(plugin.help) ? plugin.help : [plugin.help],
-      tags: Array.isArray(plugin.tags) ? plugin.tags : [plugin.tags],
-      prefix: 'customPrefix' in plugin,
-    }))
+Opciones disponibles
+*Menú Completo*: Muestra todos los comandos del bot.
+*Subbot*: _Genera un código para que te conviertas en subbot de SonGoku._
+*INFO BOT*: _Información sobre los desarrolladores, grupos y canales oficiales._
 
-  let menuText = ''
-
-  for (const tag in tags) {
-    let section = `\n*${tags[tag]}*\n`
-    let cmds = help
-      .filter(menu => menu.tags && menu.tags.includes(tag) && menu.help)
-      .map(menu => menu.help.map(cmd => `• ${usedPrefix}${cmd}`).join('\n'))
-      .join('\n')
-    if (cmds.trim().length) section += cmds + '\n'
-    menuText += section
-  }
-
-  // Nota de voz
-  await conn.sendMessage(m.chat, {
-    audio: { url: audioUrl },
-    mimetype: 'audio/mp4',
-    ptt: true
-  }, { quoted: m })
-
-  const caption = `
-╭━━━━━━━[ *${botName}* ]━━━━━━━╮
-┃ 👤 Usuario: ${name}
-┃ 📅 Fecha: ${date}
-┃ ⏰ Hora: ${time}
-┃ 👥 Usuarios activos: ${totalUsers}
-┃ ⚙️ Uptime: ${uptime}
-╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯
-
-${menuText}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✨ *Bot de WhatsApp moderno, rápido y confiable.* ✨
-`.trim()
-
-  // Enviar video con botones compatibles con WhatsApp Negocios y normal
-  await conn.sendMessage(m.chat, {
-    video: { url: menuVideo },
-    caption: caption,
-    gifPlayback: true,
-    footer: '꧁𓆩 UchihaAi 𓆪꧂ | ¡Gracias por preferirnos!',
-    templateButtons: [
-      { index: 1, quickReplyButton: { displayText: '🔍 Menú Completo', id: `${usedPrefix}allmenu` } },
-      { index: 2, quickReplyButton: { displayText: '📥 Descargas', id: `${usedPrefix}ytmp3` } },
-      { index: 3, quickReplyButton: { displayText: '📂 Grupos', id: `${usedPrefix}linkgc` } }
-    ]
-  }, { quoted: m })
+`
+ await conn.sendMessage(m.chat, {
+      image: { url: 'https://tinyurl.com/2azetyjh' },
+      caption: texto,
+      footer: botname + ` | collaboration with I'm Fz ~`,
+      buttons: [
+        {
+          buttonId: `.menucompleto`,
+          buttonText: {
+            displayText: 'MENU COMPLETO',
+          },
+        },
+        {
+          buttonId: `.serbot`,
+          buttonText: {
+            displayText: 'SERBOT',
+          },
+        },
+        {
+          buttonId: `.cuentas`,
+          buttonText: {
+            displayText: 'INFO BOT',
+          },
+        },        
+      ],
+      viewOnce: true,
+      headerType: 4,
+    }, { quoted: m });
 }
-
-handler.command = ['menu', 'menú', 'videoespecial']
+handler.command = ['menu']
 handler.help = ['menu']
 handler.tags = ['main']
-handler.register = true
-
 export default handler
-
-function clockString(ms) {
-  let h = Math.floor(ms / 3600000)
-  let m = Math.floor(ms / 60000) % 60
-  let s = Math.floor(ms / 1000) % 60
-  return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':')
-}
