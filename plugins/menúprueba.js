@@ -11,13 +11,11 @@ let handler = async (m, { conn, usedPrefix }) => {
   const menuVideo = videoUrl
   const audioUrl = videoUrl
 
-  // Tags para mostrar solo comandos de 'descargas' y 'grupos'
   const tags = {
     descargas: '⬇️ Descargas',
     group: '👥 Grupos'
   }
 
-  // Obtener plugins activos y filtrar por tags
   let help = Object.values(global.plugins)
     .filter(plugin => !plugin.disabled)
     .map(plugin => ({
@@ -38,15 +36,14 @@ let handler = async (m, { conn, usedPrefix }) => {
     menuText += section
   }
 
-  // Nota de voz de bienvenida
+  // Nota de voz
   await conn.sendMessage(m.chat, {
     audio: { url: audioUrl },
     mimetype: 'audio/mp4',
     ptt: true
   }, { quoted: m })
 
-  // Menú principal con solo los tags seleccionados
-  const texto = `
+  const caption = `
 ╭━━━━━━━[ *${botName}* ]━━━━━━━╮
 ┃ 👤 Usuario: ${name}
 ┃ 📅 Fecha: ${date}
@@ -61,19 +58,18 @@ ${menuText}
 ✨ *Bot de WhatsApp moderno, rápido y confiable.* ✨
 `.trim()
 
-  // Enviar video con menú y pie de página estilizado
+  // Enviar video con botones compatibles con WhatsApp Negocios y normal
   await conn.sendMessage(m.chat, {
     video: { url: menuVideo },
-    caption: texto,
+    caption: caption,
     gifPlayback: true,
     footer: '꧁𓆩 UchihaAi 𓆪꧂ | ¡Gracias por preferirnos!',
-    headerType: 4
+    templateButtons: [
+      { index: 1, quickReplyButton: { displayText: '🔍 Menú Completo', id: `${usedPrefix}allmenu` } },
+      { index: 2, quickReplyButton: { displayText: '📥 Descargas', id: `${usedPrefix}ytmp3` } },
+      { index: 3, quickReplyButton: { displayText: '📂 Grupos', id: `${usedPrefix}linkgc` } }
+    ]
   }, { quoted: m })
-
-  // Mensaje extra con shortcut al menú completo
-  await conn.sendMessage(m.chat, {
-    text: `🟢 Para ver el menú completo, escribe o toca: *${usedPrefix}menu*`
-  })
 }
 
 handler.command = ['menu', 'menú', 'videoespecial']
