@@ -11,45 +11,48 @@ let handler = async (m, { conn, usedPrefix }) => {
   const menuVideo = videoUrl
   const audioUrl = videoUrl
 
-  // Enviar nota de voz con audio
+  // Nota de voz de bienvenida
   await conn.sendMessage(m.chat, {
     audio: { url: audioUrl },
     mimetype: 'audio/mp4',
     ptt: true
   }, { quoted: m })
 
-  // Texto del menú
+  // Menú inspirado en Leo Toro (tira de colores + emojis + bloques)
   const texto = `
-╭───────────────「 *${botName}* 」───────────────╮
-│👤 *Usuario:* ${name}
-│📅 *Fecha:* ${date}
-│⏰ *Hora:* ${time}
-│👥 *Usuarios activos:* ${totalUsers}
-│⚙️ *Uptime:* ${uptime}
-╰───────────────────────────────────────────────╯
+╭━━━━━━━[ *${botName}* ]━━━━━━━╮
+┃ 👤 Usuario: ${name}
+┃ 📅 Fecha: ${date}
+┃ ⏰ Hora: ${time}
+┃ 👥 Usuarios activos: ${totalUsers}
+┃ ⚙️ Uptime: ${uptime}
+╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯
 
-📋 *Menú Principal:*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*💫 MENÚ PRINCIPAL 💫*
 
-🎯 ${usedPrefix}menu      - Mostrar este menú
-🧑‍💼 ${usedPrefix}owner     - Información del creador
-👥 ${usedPrefix}grupos    - Lista de grupos disponibles
+🔹 ${usedPrefix}menu         » Mostrar menú completo
+🔹 ${usedPrefix}owner        » Información del creador
+🔹 ${usedPrefix}grupos       » Lista de grupos oficiales
+🔹 ${usedPrefix}infobot      » Información del bot
+🔹 ${usedPrefix}estado       » Estado del sistema
 
-─────────────────────────────────────────────
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✨ *Bot de WhatsApp moderno, rápido y confiable.* ✨
-  `.trim()
+`.trim()
 
-  // Enviar video con menú
+  // Enviar video con menú y pie de página estilizado
   await conn.sendMessage(m.chat, {
     video: { url: menuVideo },
     caption: texto,
     gifPlayback: true,
-    footer: '¡Gracias por usar UchihaAi!',
+    footer: '꧁𓆩 UchihaAi 𓆪꧂ | ¡Gracias por preferirnos!',
     headerType: 4
   }, { quoted: m })
 
-  // Enviar mensaje con texto y comando para que usuario toque o copie
+  // Mensaje extra con shortcut al menú
   await conn.sendMessage(m.chat, {
-    text: `Para ver el menú completo, escribe o toca: *${usedPrefix}menu*`
+    text: `🟢 Para ver el menú completo, escribe o toca: *${usedPrefix}menu*`
   })
 }
 
