@@ -11,6 +11,33 @@ let handler = async (m, { conn, usedPrefix }) => {
   const menuVideo = videoUrl
   const audioUrl = videoUrl
 
+  // Tags para mostrar solo comandos de 'descargas' y 'grupos'
+  const tags = {
+    descargas: '⬇️ Descargas',
+    group: '👥 Grupos'
+  }
+
+  // Obtener plugins activos y filtrar por tags
+  let help = Object.values(global.plugins)
+    .filter(plugin => !plugin.disabled)
+    .map(plugin => ({
+      help: Array.isArray(plugin.help) ? plugin.help : [plugin.help],
+      tags: Array.isArray(plugin.tags) ? plugin.tags : [plugin.tags],
+      prefix: 'customPrefix' in plugin,
+    }))
+
+  let menuText = ''
+
+  for (const tag in tags) {
+    let section = `\n*${tags[tag]}*\n`
+    let cmds = help
+      .filter(menu => menu.tags && menu.tags.includes(tag) && menu.help)
+      .map(menu => menu.help.map(cmd => `• ${usedPrefix}${cmd}`).join('\n'))
+      .join('\n')
+    if (cmds.trim().length) section += cmds + '\n'
+    menuText += section
+  }
+
   // Nota de voz de bienvenida
   await conn.sendMessage(m.chat, {
     audio: { url: audioUrl },
@@ -18,7 +45,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     ptt: true
   }, { quoted: m })
 
-  // Menú inspirado en Leo Toro (tira de colores + emojis + bloques)
+  // Menú principal con solo los tags seleccionados
   const texto = `
 ╭━━━━━━━[ *${botName}* ]━━━━━━━╮
 ┃ 👤 Usuario: ${name}
@@ -28,14 +55,7 @@ let handler = async (m, { conn, usedPrefix }) => {
 ┃ ⚙️ Uptime: ${uptime}
 ╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-*💫 MENÚ PRINCIPAL 💫*
-
-🔹 ${usedPrefix}menu         » Mostrar menú completo
-🔹 ${usedPrefix}owner        » Información del creador
-🔹 ${usedPrefix}grupos       » Lista de grupos oficiales
-🔹 ${usedPrefix}infobot      » Información del bot
-🔹 ${usedPrefix}estado       » Estado del sistema
+${menuText}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✨ *Bot de WhatsApp moderno, rápido y confiable.* ✨
@@ -50,7 +70,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     headerType: 4
   }, { quoted: m })
 
-  // Mensaje extra con shortcut al menú
+  // Mensaje extra con shortcut al menú completo
   await conn.sendMessage(m.chat, {
     text: `🟢 Para ver el menú completo, escribe o toca: *${usedPrefix}menu*`
   })
