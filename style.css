@@ -1,0 +1,34 @@
+body {
+  background: #0f0f0f;
+  color: #ffffff;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.container {
+  text-align: center;
+  background-color: #1a1a1a;
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 0 20px #00ffc3;
+  animation: glow 2s infinite ease-in-out;
+}
+
+@keyframes glow {
+  0% { box-shadow: 0 0 15px #00ffc3; }
+  50% { box-shadow: 0 0 25px #00ffc3; }
+  100% { box-shadow: 0 0 15px #00ffc3; }
+}
+
+#codeBox {
+  font-size: 2rem;
+  margin: 20px 0;
+  color: #00ffc3;
+  border: 2px dashed #00ffc3;
+  padding: 10px 25px;
+  border-radius: 10px;
+}
