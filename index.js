@@ -1,82 +1,76 @@
-import makeWASocket, {
-  useSingleFileAuthState,
-  DisconnectReason,
-  fetchLatestBaileysVersion,
-} from '@whiskeysockets/baileys'
-import { Boom } from '@hapi/boom'
-import qrcode from 'qrcode-terminal'
+import express from "express";
+import { readFile } from "fs/promises";
+import { resolve, join } from "path";
 
-const { state, saveState } = useSingleFileAuthState('./auth_info.json')
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-async function startBot() {
+app.use(express.static(join(resolve(), "public")));
+
+app.get("/", async (req, res) => {
   try {
-    // Obtener versión actual de WhatsApp Web protocol
-    const { version, isLatest } = await fetchLatestBaileysVersion()
-    console.log(`Usando Baileys v${version.join('.')} (¿Última?: ${isLatest})`)
+    const filePath = join(resolve(), "archivo.txt");
+    const content = await readFile(filePath, "utf8");
 
-    // Crear cliente
-    const sock = makeWASocket({
-      version,
-      printQRInTerminal: false,
-      auth: state,
-      logger: undefined,
-    })
-
-    // Guardar sesión cuando cambie
-    sock.ev.on('creds.update', saveState)
-
-    // Evento para conexión, desconexión y QR
-    sock.ev.on('connection.update', (update) => {
-      const { connection, lastDisconnect, qr } = update
-
-      if (qr) {
-        console.log('Escanea este QR con tu WhatsApp:')
-        qrcode.generate(qr, { small: true })
-      }
-
-      if (connection === 'open') {
-        console.log('✅ Conectado a WhatsApp!')
-      }
-
-      if (connection === 'close') {
-        const statusCode = new Boom(lastDisconnect?.error).output.statusCode
-        console.log('❌ Conexión cerrada, código:', statusCode)
-
-        if (statusCode === DisconnectReason.loggedOut) {
-          console.log('Se cerró la sesión. Borra auth_info.json y vuelve a iniciar.')
-          process.exit(0)
-        } else {
-          console.log('Intentando reconectar...')
-          startBot()
+    const html = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Visor de Archivo</title>
+      <style>
+        body {
+          margin: 0;
+          font-family: 'Segoe UI', sans-serif;
+          background: linear-gradient(135deg, #1d1f21, #3c3f41);
+          color: #eee;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 100vh;
+          animation: fadeIn 1s ease-in;
         }
-      }
-    })
-
-    // Escuchar mensajes nuevos
-    sock.ev.on('messages.upsert', async ({ messages, type }) => {
-      if (type !== 'notify') return
-
-      const msg = messages[0]
-      if (!msg.message) return
-
-      const from = msg.key.remoteJid
-      const messageType = Object.keys(msg.message)[0]
-
-      console.log(`Mensaje nuevo de ${from}, tipo: ${messageType}`)
-
-      // Ejemplo: responder si llega un texto
-      if (messageType === 'conversation' || messageType === 'extendedTextMessage') {
-        const text = messageType === 'conversation' ? msg.message.conversation : msg.message.extendedTextMessage.text
-
-        if (text.toLowerCase() === 'hola') {
-          await sock.sendMessage(from, { text: 'Hola! ¿Cómo puedo ayudarte?' })
-          console.log('Respuesta enviada')
+        .container {
+          background: #2b2b2b;
+          padding: 2rem;
+          border-radius: 15px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+          max-width: 800px;
+          width: 90%;
+          animation: slideUp 0.6s ease-out;
         }
-      }
-    })
-  } catch (error) {
-    console.error('Error en startBot:', error)
+        pre {
+          white-space: pre-wrap;
+          word-wrap: break-word;
+          color: #9cdcfe;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0 }
+          to { opacity: 1 }
+        }
+        @keyframes slideUp {
+          from { transform: translateY(30px); opacity: 0 }
+          to { transform: translateY(0); opacity: 1 }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <h2>Contenido del archivo.txt</h2>
+        <pre>${content}</pre>
+      </div>
+    </body>
+    </html>
+    `;
+
+    res.send(html);
+  } catch (err) {
+    console.error("Error al leer el archivo:", err.message);
+    res.status(500).send("No se pudo leer el archivo.");
   }
-}
+});
 
-startBot()
+app.listen(PORT, () => {
+  console.log(`Servidor en http://localhost:${PORT}`);
+});
